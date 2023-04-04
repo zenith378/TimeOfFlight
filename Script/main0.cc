@@ -18,32 +18,35 @@ using namespace ROOT::VecOps;
 double get50val(const ROOT::RVec<double>& v1, const ROOT::RVec<double>& t1)
 {
    auto v_min = Min(v1);
-   double fifty = v_min * 0.5;
+   auto v_max = (v1[0] + v1[1])/2;
+
+   double fifty = (v_min-v_max) * 0.5;
    int index_fifty = -1;
    for (int i = 0; i < v1.size(); i++)
    {
       if (v1[i] < fifty)
       {
-         index_fifty = i;
+         index_fifty = i-1;
          break;
       }
    }
    if (index_fifty == -1)
-      return 1;
+      return 999;
    return t1[index_fifty];
 }
 
 double get50int(const ROOT::RVec<double>& v1, const ROOT::RVec<double>& t1)
 {
    auto v_min = Min(v1);
-   double ten = v_min * 0.1;
-   double ninghty = v_min * 0.9;
+   auto v_max = (v1[0] + v1[1])/2;
+   double ten = (v_min - v_max) * 0.4;
+   double ninghty = (v_min-v_max) * 0.6;
 
    int index_ten = -1;
    int index_ninghty = -1;
 
    if (v_min > 0.)
-      return 1;
+      return 99;
    for (int i = 0; i < v1.size(); i++)
    {
 
@@ -75,8 +78,8 @@ double get50int(const ROOT::RVec<double>& v1, const ROOT::RVec<double>& t1)
 
    for (int i = index_ten; i < index_ninghty; i++)
    {
-      weight_v = +v1[i];
-      mean = +v1[i] * t1[i];
+      weight_v += v1[i];
+      mean += (v1[i] * t1[i]);
    }
 
    double average = mean / weight_v;
@@ -88,10 +91,10 @@ double get50int(const ROOT::RVec<double>& v1, const ROOT::RVec<double>& t1)
 
 void main0()
 {
-   //ROOT::EnableImplicitMT();
+   ROOT::EnableImplicitMT();
    // Open root file
    const char *path_root = "../Dati/Root/";
-   const char *filename = "268";
+   const char *filename = "10";
    const char *extension = ".root";
    char rootfile[256];
    strcpy(rootfile,path_root);
@@ -111,29 +114,38 @@ void main0()
       TString namechain;
       namechain.Form("%s/%s",rootfile,key->GetName());
       c.Add(namechain);
+     // if(!strcmp(key->GetName(),"Event_500")) break;
    }
    //store the tchain inside Dataframe
    ROOT::RDataFrame df(c);
-   auto df_set = df.Define("val50_t1",get50val,{"w0","t0"})
+   auto df_set = df.Filter("Min(w0)>-0.5","not saturated wave 1")
+                   .Filter("Min(w1)>-0.5","not saturated wave 2")
+                   .Filter("Min(w2)>-0.5","not saturated wave 3")
+                   .Define("val50_t1",get50val,{"w0","t0"})
                    .Define("val50_t2",get50val,{"w1","t1"})
-                   .Define("int50_t1",get50int,{"w0","t0"})
-                   .Define("int50_t2",get50int,{"w1","t1"})
-                   .Define("int_diff","int50_t2-int50_t1")
-                   .Define("val_diff","val50_t2-val50_t1");
+                   .Define("val50_t3",get50val,{"w2","t2"})
+                   //.Define("int50_t1",get50int,{"w0","t0"})
+                   //.Define("int50_t2",get50int,{"w1","t1"})
+                   //.Define("int_diff","int50_t2-int50_t1")
+                   .Define("t2_t1","val50_t2-val50_t1")
+                   .Define("t3_t1","val50_t3-val50_t1")
+                   .Define("t3_t2","val50_t3-val50_t2");
+                   //.Filter("abs(int_diff)<30 || abs(val_diff)<30");
 
 
    TString authors="G. Cordova, A. Giani";
-
+   char position[1024] = "PMT 3 at ";
+   strcat(position,filename);
+   strcat(position," cm");
+/*
    auto c_int = new TCanvas("c_int", "Integrated diff", 950, 800);
 
-   auto h_int = df_set.Histo1D({"h", "Integrated diff", 40,-25, 0}, "int_diff");
+   auto h_int = df_set.Histo1D({"h", "Integrated diff", 100,-50, 50}, "int_diff");
    h_int->SetBinErrorOption(TH1::EBinErrorOpt::kPoisson);
    h_int->SetTitle("Time difference between PMT 2 and PMT1");
    h_int->GetYaxis()->SetTitle("Counts");
    h_int->GetXaxis()->SetTitle("Time difference [ns]");
-   char position[1024] = "PMT 3 at ";
-   strcat(position,filename);
-   strcat(position," cm");
+   
    auto tp = new TPaveText(0.65, 0.4, 0.85, 0.6, "NDC");
    tp->AddText("ToF");
    tp->AddText(authors);
@@ -144,10 +156,17 @@ void main0()
 
    h_int->DrawClone();
    tp->Draw();
+
+   char cname_mean[256]="../Plots/Calibration/";
+   strcat(cname_mean,filename); 
+   strcat(cname_mean,"mean.pdf");
+   //c_int->SaveAs(cname_mean);
+*/
+   
    auto c_val = new TCanvas("c_val", "Exact diff", 950, 800);
 
 
-   auto h_val = df_set.Histo1D({"h", "Exact diff", 40,-25, 0}, "val_diff");
+   auto h_val = df_set.Histo1D({"h", "Exact diff", 20,12,30}, "t2_t1");
    h_val->SetBinErrorOption(TH1::EBinErrorOpt::kPoisson);
    h_val->SetTitle("Time difference between PMT 2 and PMT1");
    h_val->GetYaxis()->SetTitle("Counts");
@@ -164,15 +183,40 @@ void main0()
    h_val->DrawClone();
    tp1->Draw();
 
-   char cname_mean[256]="../Plots/Calibration/";
-   strcat(cname_mean,filename); 
-   strcat(cname_mean,"mean.pdf");
-   c_int->SaveAs(cname_mean);
-
    char cname_exact[256]="../Plots/Calibration/";
    strcat(cname_exact,filename); 
    strcat(cname_exact,"exact.pdf");
-   c_int->SaveAs(cname_exact);
+   c_val->SaveAs(cname_exact);
+
+
+
+
+
+   auto c_t3_t1 = new TCanvas("c_t3_t1", "Exact diff", 950, 800);
+
+
+   auto h_31 = df_set.Histo1D({"h31", "Exact diff", 50,-30,0}, "t3_t1");
+   h_31->SetBinErrorOption(TH1::EBinErrorOpt::kPoisson);
+   h_31->SetTitle("Time difference between PMT 3 and PMT1");
+   h_31->GetYaxis()->SetTitle("Counts");
+   h_31->GetXaxis()->SetTitle("Time difference [ns]");
+
+   h_31->DrawClone();
+   tp1->Draw();
+
+
+   auto c_t2_t1 = new TCanvas("c_t2_t1", "Exact diff", 950, 800);
+
+
+   auto h_32 = df_set.Histo1D({"h32", "Exact diff", 50,-40,0}, "t3_t2");
+   h_32->SetBinErrorOption(TH1::EBinErrorOpt::kPoisson);
+   h_32->SetTitle("Time difference between PMT 3 and PMT2");
+   h_32->GetYaxis()->SetTitle("Counts");
+   h_32->GetXaxis()->SetTitle("Time difference [ns]");
+
+   h_32->DrawClone();
+   tp1->Draw();
+
 
    
 }

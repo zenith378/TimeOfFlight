@@ -87,7 +87,7 @@ void decode()
    CHEADER ch;
    const char *path_name = "../Dati/Binary/";
    const char *path_root = "../Dati/Root/";
-   const char *filename= "268.dat";
+   const char *filename= "10.dat";
    char run_string[256];
    strcpy(run_string,path_name);
    strcat(run_string,filename); 
@@ -259,19 +259,40 @@ void decode()
             for (i = 0; i < 1024; i++)
                time[b][chn][i] += dt;
          }
+/*         
+         TCanvas *c1 = new TCanvas();
 
+
+         TMultiGraph *mg = new TMultiGraph();
+         TGraph *g1 = new TGraph(1024, time[b][0], waveform[b][0]);
+         TGraph *g2 = new TGraph(1024, time[b][1], waveform[b][1]);
+         TGraph *g3 = new TGraph(1024, time[b][2], waveform[b][2]);
+         g1->SetTitle("channel 1 ");
+         g2->SetTitle("channel 2 ");
+         g3->SetTitle("channel 3 ");
+         g1->SetLineColor(kGreen);
+         g2->SetLineColor(kBlue);
+         mg->Add(g1,"lp");
+         mg->Add(g2,"cp");
+         mg->Add(g3,"lp");
+         mg->Draw("a");
+         //mg->GetXaxis()->SetLimits(370,400);
+         c1->BuildLegend();
+         c1->Update();
+         gPad->WaitPrimitive();
+
+*/
 /*
                   for (chn = 0; chn < 4; chn++)
                   {
-
 
                      // create graph
                      TGraph *g = new TGraph(1024, time[b][chn], waveform[b][chn]);
                      // fill graph
                      //for (i = 0; i < 1024; i++)
                      //   g->SetPoint(i, time[b][chn][i], waveform[b][chn][i]);
-
                      std::cout << "Drawing board" << b << " chn " << chn << " event: " << std::endl;
+
                      // draw graph and wait for user click
                      g->Draw("ACP");
                      c1->Update();
@@ -279,6 +300,7 @@ void decode()
 
                   }
                   */
+                  
       }
       // fill root tree
       rec->Fill();
