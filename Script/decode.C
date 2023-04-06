@@ -87,7 +87,7 @@ void decode()
    CHEADER ch;
    const char *path_name = "../Dati/Binary/";
    const char *path_root = "../Dati/Root/";
-   const char *filename= "10.dat";
+   const char *filename= "provaToF_5apr.dat";
    char run_string[256];
    strcpy(run_string,path_name);
    strcat(run_string,filename); 
@@ -259,7 +259,7 @@ void decode()
             for (i = 0; i < 1024; i++)
                time[b][chn][i] += dt;
          }
-/*         
+        /*
          TCanvas *c1 = new TCanvas();
 
 
@@ -280,8 +280,8 @@ void decode()
          c1->BuildLegend();
          c1->Update();
          gPad->WaitPrimitive();
-
 */
+
 /*
                   for (chn = 0; chn < 4; chn++)
                   {

@@ -10,29 +10,86 @@
 void calibration_curve(){
    TString authors = "G. Cordova, A. Giani";
    Double_t length=280;
-   Double_t points[14] ={10,30,50,70,90,110,130,150,170,190,210,230,260,268};
-   for(int i=0;i<14;i++) points[i]=length/2-points[i];
-   Double_t err_x[14] ={3,3,3,3,3,3,3,3,3,3,3,3,3,3};
-   Double_t time[14] = {19.32,16.57,13.71,10.73,7.817,5.28,2.43,-0.03,-2.54,-5.258,-8.016,-10.75,-14.95,-16.08};
-   Double_t time_error[14]={1.3,1.9,1.3,1.9,1.89,1.6,1.3,1.3,1.7,1.18,1.423,1.56,1.716,1.46};
+   Double_t points_translated[15];
+   Double_t points_translated_bis[15];
+   Double_t points[15] ={5,20,40,60,80,100,120,140,160,180,200,220,240,260,278};
+   for(int i=0;i<15;i++) points_translated[i]=length/2-points[i];
+   for(int i=0;i<15;i++) points_translated_bis[i]=length-points[i];
+   Double_t err_x[15] ={3,3,3,3,3,3,3,3,3,3,3,3,3,3,3};
+   Double_t t2_t1[15] = {18.68,16.76,13.71,11.01,8.304,5.869,3.465,0.8962,-1.826,-4.165,-6.579,-9.165,-11.89,-14.57,-16.54};
+   //for(int i=0;i<15;i++) t2_t1[i]=-t2_t1[i];
+   Double_t t2_t1_error[15]={0.883/sqrt(234),0.824/sqrt(157),0.8645/sqrt(200),0.9996/sqrt(201),0.9941/sqrt(223),0.8626/sqrt(228),
+                              0.7882/sqrt(216),0.9451/sqrt(220),0.9252/sqrt(226),0.7987/sqrt(240),0.8698/sqrt(242),0.8541/sqrt(240),0.9412/sqrt(245),0.8196/sqrt(245),1.039/sqrt(239)};
+   Double_t t3_t1[15] = {-6.713,-7.826,-9.096,-10.37,-11.71,-12.98,-14.23,-15.57,-16.8,-17.93,-19.13,-20.49,-21.89,-23.21,-24.19};
+   for(int i=0;i<15;i++) t3_t1[i]=-t3_t1[i];
+   Double_t t3_t1_error[15]={0.653/sqrt(234),0.532/sqrt(157),0.5449/sqrt(200),0.512/sqrt(201),0.635/sqrt(223),0.588/sqrt(228),
+                              0.6267/sqrt(216),0.6663/sqrt(220),0.7822/sqrt(226),0.634/sqrt(240),0.8147/sqrt(242),0.7766/sqrt(240),0.7383/sqrt(245),0.7529/sqrt(245),0.7661/sqrt(239)};
+   Double_t t3_t2[15] = {-25.39,-24.5,-22.85,-21.31,-20.05,-18.85,-17.66,-16.48,-15.01,-13.85,-12.55,-11.25,-9.98,-8.652,-7.65};
+   for(int i=0;i<15;i++) t3_t2[i]=-t3_t2[i];   
+   Double_t t3_t2_error[15]={0.712/sqrt(234),0.767/sqrt(157),0.8169/sqrt(200),0.7373/sqrt(201),0.8503/sqrt(223),0.6779/sqrt(228),
+                              0.6413/sqrt(216),0.6755/sqrt(220),0.6681/sqrt(226),0.6028/sqrt(240),0.638/sqrt(242),0.6209/sqrt(240),0.5313/sqrt(245),0.4705/sqrt(245),0.7964/sqrt(239)};
 
-   auto c1 = new TCanvas();
-   auto g1 = new TGraphErrors(14,points,time,err_x,time_error);
-   g1->SetTitle("");
-   g1->Draw("AP");
-   auto tp2 = new TPaveText(0.15, 0.7, 0.35, 0.85, "NDC");
-   tp2->AddText("ToF");
-   tp2->AddText(authors);
-   tp2->AddText("Calibration curve 30/03/23"); 
+
+
+   //t2 t1
+   auto c21 = new TCanvas();
+   auto g21 = new TGraphErrors(15,points_translated,t2_t1,err_x,t2_t1_error);
+   g21->SetTitle("Calibration curve;x_{centered};t_{2}-t_{1}");
+   g21->Draw("AP");
+   auto tp21 = new TPaveText(0.15, 0.7, 0.35, 0.85, "NDC");
+   tp21->AddText("ToF");
+   tp21->AddText(authors);
+   tp21->AddText("Calibration curve 4/04/23"); 
    gStyle -> SetOptStat(0);
    gStyle->SetOptFit(111);
    //TF1* f = new TF1("f","[2]/[1]-2*x/[1]+[0]");
    //f->FixParameter(2,length);
-   TF1* f = new TF1("f","[0]+[1]*x");
-   f->SetParNames("offset","ang coef");
+   TF1* f21 = new TF1("f21","[0]+[1]*x");
+   f21->SetParNames("offset1-offset2","2/v");
 
-   g1->Fit(f);
-   f->Draw("SAME");
-   tp2->Draw();
+   g21->Fit(f21);
+   f21->Draw("SAME");
+   tp21->Draw();
 
+
+      //t3 t1
+   auto c31 = new TCanvas();
+   auto g31 = new TGraphErrors(15,points,t3_t1,err_x,t3_t1_error);
+   g31->SetTitle("Arrival time in t1;x;t_{1}-t_{3}");
+   g31->Draw("AP");
+   auto tp31 = new TPaveText(0.15, 0.7, 0.35, 0.85, "NDC");
+   tp31->AddText("ToF");
+   tp31->AddText(authors);
+   tp31->AddText("Calibration curve 04/04/23"); 
+   gStyle -> SetOptStat(0);
+   gStyle->SetOptFit(111);
+   //TF1* f = new TF1("f","[2]/[1]-2*x/[1]+[0]");
+   //f->FixParameter(2,length);
+   TF1* f31 = new TF1("f31","[0]+[1]*x");
+   f31->SetParNames("offset1","1/v");
+
+   g31->Fit(f31);
+   f31->Draw("SAME");
+   tp31->Draw();
+
+
+      //t3 t2
+   auto c32 = new TCanvas();
+   auto g32 = new TGraphErrors(15,points_translated_bis,t3_t2,err_x,t3_t2_error);
+   g32->SetTitle("Arrival time in t2;x_{inv};t_{2}-t_{3}");
+   g32->Draw("AP");
+   auto tp32 = new TPaveText(0.15, 0.7, 0.35, 0.85, "NDC");
+   tp32->AddText("ToF");
+   tp32->AddText(authors);
+   tp32->AddText("Calibration curve 04/04/23"); 
+   gStyle -> SetOptStat(0);
+   gStyle->SetOptFit(111);
+   //TF1* f = new TF1("f","[2]/[1]-2*x/[1]+[0]");
+   //f->FixParameter(2,length);
+   TF1* f32 = new TF1("f32","[0]+[1]*x");
+   f32->SetParNames("offset2","1/v");
+
+   g32->Fit(f32);
+   f32->Draw("SAME");
+   tp32->Draw();
 }
