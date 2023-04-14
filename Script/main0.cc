@@ -98,7 +98,7 @@ void main0()
    ROOT::EnableImplicitMT();
    // Open root file
    const char *path_root = "../Dati/Root/";
-   const char *filename = "provaToF_5apr";
+   const char *filename = "run0";
    const char *extension = ".root";
    char rootfile[256];
    strcpy(rootfile,path_root);
@@ -131,7 +131,10 @@ void main0()
    ROOT::RDataFrame df(c);
    auto df_set = df.Filter("Min(w0)>=-0.43","not saturated wave 1")
                    .Filter("Min(w1)>=-0.43","not saturated wave 2")
-                   //.Filter("Min(w2)>=-0.43","not saturated wave 3")
+                   .Filter("Min(w2)>=-0.43","not saturated wave 3")
+                   .Filter("Min(w0)<-0.","event in 1")
+                   .Filter("Min(w1)<-0.","event in 2")
+                   .Filter("Min(w2)<-0.","event in 3")
                    .Define("pedestal_ind",vGen)
                    .Define("pedestal_1","Drop(w0,pedestal_ind)")
                    .Define("v_max_1","Mean(pedestal_1)")
@@ -154,9 +157,9 @@ void main0()
                    //.Define("val50_t1",get50val,{"w0","t0"})
                    //.Define("val50_t2",get50val,{"w1","t1"})
                    //.Define("val50_t3",get50val,{"w2","t2"})
-                   .Filter("abs(val50_t1)<205","t1 read correctly")
-                   .Filter("abs(val50_t2)<205","t2 read correctly")
-                   .Filter("abs(val50_t3)<205","t3 read correctly")
+                   //.Filter("abs(val50_t1)<205","t1 read correctly")
+                   //.Filter("abs(val50_t2)<205","t2 read correctly")
+                   //.Filter("abs(val50_t3)<205","t3 read correctly")
                    //.Define("int50_t1",get50int,{"w0","t0"})
                    //.Define("int50_t2",get50int,{"w1","t1"})
                    //.Define("int_diff","int50_t2-int50_t1")
@@ -169,6 +172,7 @@ void main0()
                    .Define("TOF","val50_t3-(val50_t1+val50_t2)/2+140*0.06414+(6.538+7.356)/2");
                    //.Filter("abs(int_diff)<30 || abs(val_diff)<30");
 
+   df_set.Snapshot("Events","../Dati/Root/Run0long_df.root");
 
    TString authors="G. Cordova, A. Giani";
    char position[1024] = "PMT 3 at ";
@@ -267,7 +271,7 @@ void main0()
     auto c_TOF = new TCanvas("c_TOF", "TOF", 950, 800);
 
 
-   auto h_TOF = df_set.Histo1D({"h_TOF", "TOF",30,-5,10}, "TOF");
+   auto h_TOF = df_set.Histo1D({"h_TOF", "TOF",150,-5,25}, "TOF");
    h_TOF->SetBinErrorOption(TH1::EBinErrorOpt::kPoisson);
    h_TOF->SetTitle("Time of Flight");
    h_TOF->GetYaxis()->SetTitle("Counts");
@@ -276,7 +280,7 @@ void main0()
    auto tp1 = new TPaveText(0.65, 0.4, 0.85, 0.6, "NDC");
    tp1->AddText("ToF");
    tp1->AddText(authors);
-   tp1->AddText("Run0 05/04/23 10:30-12:00");
+   tp1->AddText("Run0 long 05/04/23 18:30-09:40");
    //tp1->AddText("Exact Method");
    h_TOF->DrawClone();
    tp1->Draw();

@@ -18,6 +18,9 @@
 #include <vector>
 #include <map>
 #include <numeric>
+#include <algorithm>
+#include <math.h>
+#include <cstring>
 
 #define SAMPLES_PER_WAVEFORM 1024 ///< The number of samples made by the waveforms, both DRS and WDB.
 
@@ -92,6 +95,7 @@ public:
     const std::vector<float> &GetVolts();
     const std::vector<float> &GetTimes();
     const std::vector<int> &GetPeakIndices();
+    const EventHeader &GetEH() { return eh_; };
 
     const MAP &GetVoltMap() { return volts_; };
     const MAP &GetTimeMap() { return times_; };
@@ -104,6 +108,8 @@ private:
 
     MAP times_; ///< Structure to hold integrated times values of all boards and channels.
     MAP volts_; ///< Structure to hold voltage values of all boards and channels.
+
+    EventHeader eh_;
 
     std::pair<float, float> ped_;      ///< Pair to hold pedestal *mean* and pedestal *std.dev.*.
     std::pair<float, float> peak_;     ///< Pair to hold value of voltage and time at the peak.
@@ -152,16 +158,20 @@ public:
     DAQFile(const std::string &);
     ~DAQFile() { in_.close(); }
 
-    DAQFile &Initialise();
     DAQFile &Close();
     DAQFile &Open(const std::string &);
 
-    bool operator>>(TAG &);
-    bool operator>>(EventHeader &);
     bool operator>>(DRSEvent &);
     bool operator>>(WDBEvent &);
 
+    const MAP &GetTimeMap() { return times_; };
+    DAQFile &Initialise();
+
 private:
+
+
+    bool operator>>(TAG &);
+    bool operator>>(EventHeader &);
     operator bool();
     void Read(TAG &);
     void Read(EventHeader &);
@@ -175,6 +185,7 @@ private:
     char n_;               ///< The initial letter of the newest tag read
     bool initialization_;  ///< Flag to store if @ref DAQFile::Initialise() was already called
     MAP times_;            ///< Struct to hold \f$ \Delta t\f$ read from the ```TIME```part of the file
+    bool is_lab_;          ///< Flag to check if the board is from LAB or not;
 };
 
 /*

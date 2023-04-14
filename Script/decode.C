@@ -87,7 +87,7 @@ void decode()
    CHEADER ch;
    const char *path_name = "../Dati/Binary/";
    const char *path_root = "../Dati/Root/";
-   const char *filename= "provaToF_5apr.dat";
+   const char *filename= "run0.dat";
    char run_string[256];
    strcpy(run_string,path_name);
    strcat(run_string,filename); 
