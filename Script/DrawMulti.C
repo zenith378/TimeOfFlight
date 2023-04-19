@@ -7,7 +7,7 @@
 
 
 void DrawMulti(){
-   TFile f("Event0.root","update");
+   TFile f("Event15.root","update");
  
    auto tree= f.Get<TTree>("Event0");
    Int_t N = tree->GetEntries();
